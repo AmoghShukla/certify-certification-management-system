@@ -13,6 +13,18 @@ class UserRole(Enum):
     CANDIDATE = "CANDIDATE"
     DIPLOMATE = "DIPLOMATE"
 
+ROLE_HIERARCHY: dict[str, int] = {
+    "USER": 1,
+    "CANDIDATE": 2,
+    "DIPLOMATE": 3,
+    "ADMIN": 4,
+    "SUPERADMIN": 5,
+}
+
+def highest_role(roles: list[str]) -> str:
+    return max(roles, key=lambda r: ROLE_HIERARCHY.get(r, 0))
+ 
+
 class UserExaminationStatus(Enum):
     PENDING = "PENDING"
     SCHEDULED = "SCHEDULED"
