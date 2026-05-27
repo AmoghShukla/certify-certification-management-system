@@ -44,7 +44,7 @@ class UserRoleRepository:
                 .where(
                     UserRoleClass.user_id==user_id
                 )
-            ).scalars().first()
+            ).scalars().all()
         except SQLAlchemyError as e:
             raise CustomException.UserNotFoundError()
         

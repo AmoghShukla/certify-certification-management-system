@@ -41,6 +41,7 @@ class UserService:
                 'user_role' : role.user_role
         }
 
+    @staticmethod
     def create_admin(payload, db):
         user = UserRepository.get_user_by_email_id(payload.admin_email, db)
         if user:

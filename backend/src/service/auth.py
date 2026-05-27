@@ -73,7 +73,7 @@ class AuthService:
             raise CustomException.ServiceError(str(e))
 
     
-
+    @staticmethod
     def login_user(payload, db):
         user_email = payload.username
         user_password = payload.password
@@ -112,7 +112,7 @@ class AuthService:
         access_token = Security.create_access_token(data)
 
         return {
-            'accesss_token' : access_token,
+            'access_token' : access_token,
             'refresh_token' : token
         }
         

@@ -14,7 +14,7 @@ class AlreadyExistsError(AppException):
     def __init__(self, msg):
         super().__init__(
             message=f"{msg} Already Exists",
-            status_code=status.HTTP_404_NOT_FOUND
+            status_code=status.HTTP_409_CONFLICT
         )
 
 
