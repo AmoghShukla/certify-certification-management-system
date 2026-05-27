@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from pydantic_ai import settings
+# from pydantic_ai import settings
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 

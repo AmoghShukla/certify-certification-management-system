@@ -15,6 +15,8 @@ from backend.src.router.user import get_admin
 
 from sqlalchemy.orm import Session
 
+from backend.src.service.user import UserService
+
 
 class AuthService:
 
