@@ -1,20 +1,33 @@
-from sqlalchemy import Boolean, Column, UUID, DateTime, Enum as SQLAlchemyEnum, ForeignKey, Integer, String
 from uuid import uuid4
 
-from sqlalchemy.orm import Relationship
-from backend.src.database.Base import base
-from .enum import UserRole
-from datetime import UTC, datetime, timezone
-from .user import UserClass
+from sqlalchemy import Column, Enum as SQLAlchemyEnum, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 
-class UserRoleClass(base):
-    __tablename__="UserRoleTable"
-
-    userrole_id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True)
-    user_id = Column(UUID, ForeignKey('UserTable.user_id'), nullable=False)
-    user_role = Column(SQLAlchemyEnum(UserRole), default=UserRole.USER)
-    created_at = Column(DateTime(timezone=True), default= lambda : datetime.now(timezone.utc))
-    updated_at = Column(DateTime, nullable=True)
-    is_deleted = Column(Boolean, default=False)
+from src.core.mixins import AuditTrailMixin
+from src.database.Base import base
+from src.model.enum import UserRole
 
 
+class UserRoleClass(AuditTrailMixin, base):
+    __tablename__ = "UserRoleTable"
+
+    userrole_id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+        index=True,
+    )
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("UserTable.user_id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    user_role = Column(
+        SQLAlchemyEnum(UserRole),
+        default=UserRole.USER,
+        nullable=False,
+    )
+
+    user = relationship("UserClass", back_populates="roles")
