@@ -36,6 +36,20 @@ def _create_moc_with_children(cycle_id: UUID, db: Session) -> MocClass:
 class RenewalService:
 
     @staticmethod
+    def _get_cycle_by_number(
+        user_id: UUID,
+        cycle_number: int,
+        db: Session
+    ) -> CycleClass | None:
+        return db.execute(
+            select(CycleClass).where(
+                CycleClass.user_id == user_id,
+                CycleClass.cycle_number == cycle_number,
+                CycleClass.is_deleted == False,
+            )
+        ).scalars().first()
+
+    @staticmethod
     def renew_certificate(user_id: UUID, db: Session) -> dict:
         cert = db.execute(
             select(CertificationClass).where(
@@ -68,64 +82,39 @@ class RenewalService:
             }
 
         if cycle.cycle_number % 3 == 0:
-            # Validate MOC is not dangerously delayed before allowing reassessment
-            cycle_number_to_check = cycle.cycle_number - 2
-            moc = cycle.mocs[cycle_number_to_check] if cycle.mocs else None
-            if moc and moc.moc_status == MocStatus.DANGEROUSLY_DELAYED:
+
+            reference_cycle_number = cycle.cycle_number - 2
+
+            reference_cycle = RenewalService._get_cycle_by_number(
+                user_id=user_id,
+                cycle_number=reference_cycle_number,
+                db=db,
+            )
+
+            reference_moc = (reference_cycle.mocs[0] if reference_cycle and reference_cycle.mocs else None)
+
+            if (reference_moc and reference_moc.moc_status == MocStatus.DANGEROUSLY_DELAYED):
                 cert.certification_status = CertificationStatus.WITHDRAWN
                 db.commit()
+
                 return {
                     "message": (
-                        "Certificate withdrawn. After 3 cycles, MOC was dangerously delayed "
-                        "— reassessment not permitted."
+                        f"Certificate withdrawn. "
+                        f"Reference cycle {reference_cycle_number} MOC "
+                        f"was dangerously delayed."
                     ),
                     "certification_id": str(cert.certification_id),
                     "certification_status": CertificationStatus.WITHDRAWN.value,
                 }
+
             return {
                 "message": (
-                    f"Cycle {cycle.cycle_number} complete. You must schedule a REASSESSMENT "
-                    "examination to renew your certificate. Please book a REASSESSMENT slot."
+                    f"Cycle {cycle.cycle_number} complete. "
+                    f"You must schedule a REASSESSMENT examination "
+                    f"to renew your certificate."
                 ),
                 "action_required": "REASSESSMENT",
                 "certification_id": str(cert.certification_id),
                 "current_cycle_number": cycle.cycle_number,
+                "reference_cycle_checked": reference_cycle_number,
             }
-
-        cert.certification_status = CertificationStatus.INACTIVE
-        today = date.today()
-        valid_until = today + timedelta(days=THREE_YEARS_DAYS)
-        new_renewal_count = cert.renewal_count + 1
-
-        new_cert = CertificationClass(
-            user_id=user_id,
-            issued_date=today,
-            valid_until=valid_until,
-            renewal_count=new_renewal_count,
-            certification_status=CertificationStatus.ACTIVE,
-        )
-        db.add(new_cert)
-        db.flush()
-
-        new_cycle_number = cycle.cycle_number + 1
-        new_cycle = CycleClass(
-            user_id=user_id,
-            certification_id=new_cert.certification_id,
-            cycle_number=new_cycle_number,
-            start_date=today,
-            end_date=valid_until,
-        )
-        db.add(new_cycle)
-        db.flush()
-
-        _create_moc_with_children(new_cycle.cycle_id, db)
-        db.commit()
-
-        return {
-            "message": "Certificate renewed successfully.",
-            "new_certification_id": str(new_cert.certification_id),
-            "new_cycle_id": str(new_cycle.cycle_id),
-            "new_cycle_number": new_cycle_number,
-            "issued_date": str(today),
-            "valid_until": str(valid_until),
-        }
