@@ -23,7 +23,7 @@ ROLE_HIERARCHY: dict[str, int] = {
 
 def highest_role(roles: list[str]) -> str:
     return max(roles, key=lambda r: ROLE_HIERARCHY.get(r, 0))
- 
+
 
 class UserExaminationStatus(Enum):
     PENDING = "PENDING"
@@ -31,8 +31,8 @@ class UserExaminationStatus(Enum):
     COMPLETED = "COMPLETED"
 
 class ExaminationType(Enum):
-    ASSESMENT = "ASSESMENT"
-    REASSESMENT = "REASSESMENT"
+    ASSESSMENT = "ASSESSMENT"
+    REASSESSMENT = "REASSESSMENT"
 
 class MocStatus(Enum):
     INCOMPLETE = "INCOMPLETE"
@@ -40,16 +40,23 @@ class MocStatus(Enum):
     DELAYED = "DELAYED"
     DANGEROUSLY_DELAYED = "DANGEROUSLY_DELAYED"
 
+class CycleStatus(Enum):
+    ACTIVE = "ACTIVE"
+    PUNCTUAL = "PUNCTUAL"
+    DELAYED = "DELAYED"
+    DANGEROUSLY_DELAYED = "DANGEROUSLY_DELAYED"
+    WITHDRAWN = "WITHDRAWN"
+
 class CertificationStatus(Enum):
     ACTIVE = "ACTIVE"
     INACTIVE = "INACTIVE"
-    LOST = "LOST"
+    WITHDRAWN = "WITHDRAWN"
 
 class ProcessStatus(Enum):
     INCOMPLETE = "INCOMPLETE"
     COMPLETED = "COMPLETED"
 
 class PaymentStatus(Enum):
-    COMPLETED = "COMEPLETED"
+    COMPLETED = "COMPLETED"
     PENDING = "PENDING"
     REFUNDED = "REFUNDED"
