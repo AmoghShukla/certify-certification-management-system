@@ -69,7 +69,8 @@ class RenewalService:
 
         if cycle.cycle_number % 3 == 0:
             # Validate MOC is not dangerously delayed before allowing reassessment
-            moc = cycle.mocs[0] if cycle.mocs else None
+            cycle_number_to_check = cycle.cycle_number - 2
+            moc = cycle.mocs[cycle_number_to_check] if cycle.mocs else None
             if moc and moc.moc_status == MocStatus.DANGEROUSLY_DELAYED:
                 cert.certification_status = CertificationStatus.WITHDRAWN
                 db.commit()
