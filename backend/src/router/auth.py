@@ -15,7 +15,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 router = APIRouter(prefix='/auth', tags=['Auth'])
 
 @router.post('/register')
-def user_register(
+async def user_register(
     background_tasks : BackgroundTasks,
     user_title: Annotated[UserTitle, Form()],
     user_first_name: Annotated[str, Form()],
@@ -39,7 +39,8 @@ def user_register(
         user_degree=user_degree,
         user_passing_year=user_passing_year
     )
-    return AuthService.register_user(payload, background_tasks, db)
+    registration = await AuthService.register_user(payload, background_tasks, db)
+    return registration
 
 @router.post('/login', response_model=LoginResponse)
 def user_login(user_details: OAuth2PasswordRequestForm = Depends(), db : Session = Depends(get_db)):
