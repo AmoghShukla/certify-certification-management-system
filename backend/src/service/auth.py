@@ -3,6 +3,7 @@ from datetime import datetime, timezone
  
 from sqlalchemy.orm import Session
  
+from backend.src.service.certificate_extraction_service import CertificateExtractionService
 from src.core.security import Security
 from src.exceptions import CustomException
 from src.model.enum import UserRole, highest_role
@@ -19,19 +20,21 @@ from src.router.user import get_admin
 class AuthService:
  
     @staticmethod
-    def register_user(payload, background_tasks, db):
+    async def register_user(payload, background_tasks, db):
         try:
-            user = UserRepository.get_user_by_email_id(payload.user_email, db)
-            if user:
-                raise CustomException.UserAlreadyExists()
-            if payload.user_password != payload.user_confirm_password:
-                raise CustomException.PasswordDoesNotMatch()
- 
             if payload.user_certificate is not None:
+                # extract year BEFORE uploading (seek(0) resets the cursor inside)
+                extracted_year = await CertificateExtractionService.extract_passing_year(
+                    payload.user_certificate
+                )
+                if extracted_year and extracted_year != 0:
+                    payload.user_passing_year = extracted_year  # override whatever user typed
+
                 uploaded_certificate = S3Service.upload_file(payload.user_certificate)
                 if not uploaded_certificate:
-                    raise CustomException.ServiceError("Error while uploading user certificate!")
+                    raise CustomException.ServiceError("Error while uploading user certificate!!!")
                 payload.user_certificate = uploaded_certificate
+
  
             if not os.path.exists("src/utils/temps"):
                 os.makedirs("src/utils/temps", exist_ok=True)
