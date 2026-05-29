@@ -23,7 +23,6 @@ class AuthService:
     async def register_user(payload, background_tasks, db):
         try:
             if payload.user_certificate is not None:
-                # extract year BEFORE uploading (seek(0) resets the cursor inside)
                 extracted_year = await CertificateExtractionService.extract_passing_year(
                     payload.user_certificate
                 )
