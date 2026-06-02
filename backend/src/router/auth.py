@@ -41,7 +41,6 @@ async def user_register(
     )
 
     registration = await AuthService.register_user(payload, background_tasks, db)
-    
     return registration
 
 @router.post('/login', response_model=LoginResponse)
