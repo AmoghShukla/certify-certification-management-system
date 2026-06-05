@@ -48,7 +48,6 @@ async def user_register(
 def user_login(user_details: OAuth2PasswordRequestForm = Depends(), db : Session = Depends(get_db)):
     return AuthService.login_user(user_details, db)
 
-
 @router.post('/refresh_token')
 def refresh_token(refresh_token, db : Session = Depends(get_db)):
     return AuthService.refresh_token(refresh_token, db)
