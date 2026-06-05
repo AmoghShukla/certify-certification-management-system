@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 
 from backend.src.schema.examination import LicensureToggleRequest
+from backend.src.service.licensure_service import LicensureService
 from backend.src.service.moc import MocService
 from backend.src.database.Session import get_db
 
